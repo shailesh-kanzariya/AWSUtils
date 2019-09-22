@@ -1,0 +1,39 @@
+{
+  "name": "awsutils",
+  "version": "1.0.0",
+  "description": "little simple wrapper for aws-sdk",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard && DEBUG=ValidationUtil,winston jest"
+  },
+  "jest": {
+    "verbose": false,
+    "testEnvironment": "node",
+    "timers": "fake"
+  },
+  "standard": {
+    "env": [
+      "jest"
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shailesh-kanzariya/AWSUtils.git"
+  },
+  "author": "shailesh kanzariya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/shailesh-kanzariya/AWSUtils/issues"
+  },
+  "homepage": "https://github.com/shailesh-kanzariya/AWSUtils#readme",
+  "devDependencies": {
+    "dotenv": "^8.1.0",
+    "jest": "^24.9.0",
+    "standard": "^14.3.1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.533.0",
+    "debug": "^4.1.1",
+    "winston": "^3.2.1"
+  }
+}

@@ -3,82 +3,107 @@ winston.add(new winston.transports.Console()) // add console as transport target
 const debug = require('debug')('ValidationUtil')
 require('dotenv').config()
 
-/*
-Performs various 'data validations' i.e. is valid string type?, is valid JSON?, is valid email? etc.
-*/
+/**
+ * ValidationUtil Class: Performs various 'data validations' i.e. is valid string type?, is valid Integer?, is valid email? etc.
+ * @class  ValidationUtil
+ */
 class ValidationUtil extends Object {
-  // validate each string item in list
-  static async isValidStringData (strListToValidate, shouldCheckEmptyValue = true) {
-    const funcName = 'isValidStringData: '
+  /**
+   * validates that the each string is not 'null', not 'undefined', its type is 'string' and its length is greater than zero
+   * @param {Array} strListToValidate list of string items to validate
+   * @param {Boolean} [invalidateEmptyString=true] invalidate if string is empty
+   */
+  static async isValidString (strListToValidate, invalidateEmptyString = true) {
+    const funcName = 'isValidString: '
     const invalidParamsList = []
     try {
-      debug(`${funcName}strListToValidate = ${JSON.stringify(strListToValidate)}, shouldCheckEmptyValue = ${shouldCheckEmptyValue}`)
+      debug(`${funcName}strListToValidate = ${JSON.stringify(strListToValidate)}, invalidateEmptyString = ${invalidateEmptyString}`)
       if (!(strListToValidate && Array.isArray(strListToValidate))) {
         winston.error(`invalid input parameter: strListToValidate = ${JSON.stringify(strListToValidate)}`)
         throw (new Error(`invalid input parameter: strListToValidate = ${JSON.stringify(strListToValidate)}`))
       } // if
-      // validate each string-element from the list
-      for (const stringElement of strListToValidate) {
+      // in case of only one item, avoid for loop
+      if (strListToValidate.length === 1) {
+        debug(`${funcName}strListToValidate length = 1, so not going to iterate for loop`)
+        const stringElement = strListToValidate[0]
         debug(`${funcName}stringElement = ${stringElement}`)
-        if (!(stringElement !== null && stringElement !== undefined && typeof stringElement === 'string')) {
+        if (!(typeof stringElement === 'string' && stringElement !== null && stringElement !== undefined)) {
           debug(`${funcName}pushing invalid param stringElement = ${stringElement}`)
           invalidParamsList.push(stringElement)
-        } else if (shouldCheckEmptyValue) {
+        } else if (invalidateEmptyString === true) {
           if (!String(stringElement).length > 0) {
             debug(`${funcName}pushing invalid param stringElement = ${stringElement}`)
             invalidParamsList.push(stringElement)
           } // if
         } // else if
-      } // for of
+      } else {
+        // validate each string-element from the list
+        for (const stringElement of strListToValidate) {
+          debug(`${funcName}stringElement = ${stringElement}`)
+          if (!(typeof stringElement === 'string' && stringElement !== null && stringElement !== undefined)) {
+            debug(`${funcName}pushing invalid param stringElement = ${stringElement}`)
+            invalidParamsList.push(stringElement)
+          } else if (invalidateEmptyString === true) {
+            if (!String(stringElement).length > 0) {
+              debug(`${funcName}pushing invalid param stringElement = ${stringElement}`)
+              invalidParamsList.push(stringElement)
+            } // if
+          } // else if
+        } // for of
+      } // else
       if (invalidParamsList.length > 0) {
         debug(`${funcName}invalidParamsList = ${JSON.stringify(invalidParamsList)}`)
         throw (new Error(`invalid data, invalidParamsList = ${JSON.stringify(invalidParamsList)}`))
       } // if
       return strListToValidate
     } catch (error) {
-      winston.error(`error = ${error}`)
+      winston.error(`${funcName}error = ${error}`)
       throw (error)
     }
-  } // function isValidStringData
+  } // function isValidString
 
-  // validate each json item in list
-  static async isValidJsonData (jsonListToValidate, shouldCheckEmptyValue = true) {
-    const funcName = 'isValidJsonData: '
+  /**
+   * validates that the each object is not 'null' and not 'undefined'
+   * @param {Array} objListToValidate
+   */
+  static async isValidObject (objListToValidate) {
+    const funcName = 'objListToValidate: '
     const invalidParamsList = []
     try {
-      debug(`${funcName}jsonListToValidate = ${JSON.stringify(jsonListToValidate)}, shouldCheckEmptyValue = ${shouldCheckEmptyValue}`)
-      if (!(jsonListToValidate && Array.isArray(jsonListToValidate))) {
-        winston.error(`${funcName}invalid input parameter: jsonListToValidate = ${JSON.stringify(jsonListToValidate)}`)
-        throw (new Error(`${funcName}invalid input parameter: jsonListToValidate = ${JSON.stringify(jsonListToValidate)}`))
-      }
-      // check each json-item if its valid json
-      for (const jsonElement of jsonListToValidate) {
-        debug(`${funcName}jsonElement = ${JSON.stringify(jsonElement)}`)
-        for (const key in jsonElement) {
-          // eslint-disable-next-line no-prototype-builtins
-          if (jsonElement.hasOwnProperty(key)) {
-            const keyVal = jsonElement[key]
-            debug(`${funcName}key = ${key}, keyVal = ${keyVal}`)
-            // check for value
-            if (shouldCheckEmptyValue) {
-              if (!String(keyVal).length > 0) {
-                debug(`${funcName}pushing invalid param keyVal = ${keyVal}`)
-                invalidParamsList.push(jsonElement)
-              }
-            } // if
+      debug(`${funcName}objListToValidate = ${JSON.stringify(objListToValidate)}`)
+      if (!(objListToValidate && Array.isArray(objListToValidate))) {
+        winston.error(`invalid input parameter: objListToValidate = ${JSON.stringify(objListToValidate)}`)
+        throw (new Error(`invalid input parameter: objListToValidate = ${JSON.stringify(objListToValidate)}`))
+      } // if
+      // in case of only one item, avoid for loop
+      if (objListToValidate.length === 1) {
+        debug(`${funcName}objListToValidate length = 1, so not going to iterate for loop`)
+        const obj = objListToValidate[0]
+        debug(`${funcName}obj = ${JSON.stringify(obj)}`)
+        if (!(typeof obj === 'object' && obj !== null && obj !== undefined)) {
+          debug(`${funcName}pushing invalid param obj = ${obj}`)
+          invalidParamsList.push(obj)
+        } // if
+      } else {
+        // validate each object from the list
+        for (const obj of objListToValidate) {
+          debug(`${funcName}obj = ${JSON.stringify(obj)}`)
+          if (!(typeof obj === 'object' && obj !== null && obj !== undefined)) {
+            debug(`${funcName}pushing invalid param obj = ${obj}`)
+            invalidParamsList.push(obj)
           } // if
-        } // for in
-      } // for of
+        } // for of
+      } // else
       if (invalidParamsList.length > 0) {
         debug(`${funcName}invalidParamsList = ${JSON.stringify(invalidParamsList)}`)
         throw (new Error(`invalid data, invalidParamsList = ${JSON.stringify(invalidParamsList)}`))
       } // if
-      return jsonListToValidate
+      return objListToValidate
     } catch (error) {
-      winston.error(`error = ${error}`)
+      winston.error(`${funcName}error = ${error}`)
       throw (error)
     }
-  } // function isValidJsonData
+  } // function
 } // class
 
 module.exports = {

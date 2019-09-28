@@ -1,15 +1,16 @@
 {
-  "name": "awsutils",
+  "name": "simple-dynamodb-util",
   "version": "1.0.0",
-  "description": "little simple wrapper for aws-sdk",
+  "description": "little simpler and easier helper functions for aws-sdk-dynamodb",
   "main": "index.js",
   "scripts": {
-    "test": "standard && DEBUG=ValidationUtil,winston jest"
+    "test": "standard && DEBUG=ValidationUtil,SimpleDynamoDBUtil jest"
   },
   "jest": {
     "verbose": false,
     "testEnvironment": "node",
-    "timers": "fake"
+    "timers": "fake",
+    "preset": "@shelf/jest-dynamodb"
   },
   "standard": {
     "env": [
@@ -27,8 +28,10 @@
   },
   "homepage": "https://github.com/shailesh-kanzariya/AWSUtils#readme",
   "devDependencies": {
+    "@shelf/jest-dynamodb": "^1.4.1",
     "dotenv": "^8.1.0",
     "jest": "^24.9.0",
+    "jsdoc": "^3.6.3",
     "standard": "^14.3.1"
   },
   "dependencies": {

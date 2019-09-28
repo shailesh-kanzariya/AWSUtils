@@ -1,6 +1,6 @@
 const winston = require('winston')
 winston.add(new winston.transports.Console()) // add console as transport target
-const debug = require('debug')('AWSDynamoDBUtil')
+const debug = require('debug')('SimpleDynamoDBUtil')
 const AWS = require('aws-sdk')
 const { ValidationUtil } = require('./common-utils/ValidationUtil')
 
@@ -23,7 +23,7 @@ class SimpleDynamoDBUtil extends Object {
    * @param {JSON} itemJson new item to create
    * @param {string} [pkAttributeName] pkAttributeName given valid partition-key (pk) value, it prevents overwrite of existing item having same partition-key (pk) value
    */
-  async createNewItem (tableName, itemJson, pkAttributeName = null) {
+  async createNewItemInTable (tableName, itemJson, pkAttributeName = null) {
     const funcName = 'createNewItem: '
     try {
       // validate input params
@@ -57,6 +57,7 @@ class SimpleDynamoDBUtil extends Object {
    * @param {string} filterExpression
    * @param {string} projectionExpression
    */
+  /*
   async queryTableSimple (tableName, keyConditionExpression, expressionAttributeNames, expressionAttributeValues, filterExpression = null, projectionExpression = null) {
     const funcName = 'queryTableSimple: '
     try {
@@ -81,6 +82,7 @@ class SimpleDynamoDBUtil extends Object {
       throw (error)
     }
   } // queryTableSimple
+  */
 } // class
 
 module.exports = {

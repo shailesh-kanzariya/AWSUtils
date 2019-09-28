@@ -44,8 +44,8 @@ class DynamoDBTableUtil extends SimpleDynamoDBUtil {
     try {
       debug(`${funcName}itemJson = ${JSON.stringify(itemJson)}`)
       // throw error if this.tableName and this.pkAttributeName values are not set
-      await ValidationUtil.isValidObject([this.tableName, this.pkAttributeName])
-      const data = await super.createNewItemInTable(this.tableName, itemJson) // overwrite existing similar item of exist
+      await ValidationUtil.isValidString([this.tableName, this.pkAttributeName])
+      const data = await super.createNewItemInTable(this.tableName, itemJson) // overwrite existing similar item if exist
       return data
     } catch (error) {
       winston.error(`${funcName}error = ${error}`)

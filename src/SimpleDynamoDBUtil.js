@@ -24,7 +24,7 @@ class SimpleDynamoDBUtil extends Object {
    * @param {string} [pkAttributeName] pkAttributeName given valid partition-key (pk) value, it prevents overwrite of existing item having same partition-key (pk) value
    */
   async createNewItemInTable (tableName, itemJson, pkAttributeName = null) {
-    const funcName = 'createNewItem: '
+    const funcName = 'createNewItemInTable: '
     try {
       // validate input params
       await ValidationUtil.isValidString([tableName])

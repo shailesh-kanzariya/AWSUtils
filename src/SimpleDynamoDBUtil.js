@@ -175,10 +175,12 @@ class SimpleDynamoDBUtil extends Object {
       }
       if (shouldOverwriteExistingItem === false) { // don't overwrite an existing item
         // get table's keyschema
-        const tableKeySchema = await this.getKeySchemaForTable(tableName)
-        debug(`${funcName}tableKeySchema = ${JSON.stringify(tableKeySchema)}`)
-        const pkAttributeName = tableKeySchema.AttributeName
+        const pkAttributeName = await this.getHashKeyAttributeNameForTable(tableName)
         debug(`${funcName}pkAttributeName = ${pkAttributeName}`)
+        if (!pkAttributeName) {
+          winston.error(`${funcName}failed to get attribute name of partition key, pkAttributeName = ${pkAttributeName}`)
+          throw (new Error(`${funcName}failed to get attribute name of partition key, pkAttributeName = ${pkAttributeName}`))
+        }
         params.ConditionExpression = `attribute_not_exists(${pkAttributeName})`
       }
       debug(`${funcName}params = ${JSON.stringify(params)}`)
@@ -194,21 +196,26 @@ class SimpleDynamoDBUtil extends Object {
   /**
    * get specified item from table
    * @param {string} tableName table from which to get the item
-   * @param {JSON} pkAttributeName partition key attribute-name
-   * @param {any} itemPkValue partition key attribute-value of the item to get
+   * @param {any} itemPkValue pk attribute-value of the item to get
    */
-  async getItemFromTable (tableName, pkAttributeName, itemPkValue) {
+  async getItemFromTable (tableName, itemPkValue) {
     const funcName = 'getItemFromTable: '
     try {
       // validate input params
-      await ValidationUtil.isValidString([tableName, pkAttributeName])
+      await ValidationUtil.isValidString([tableName])
       await ValidationUtil.isValidObject([this.docClient])
+      debug(`${funcName}itemPkValue = ${itemPkValue}`)
       if (itemPkValue === null || itemPkValue === undefined) {
         winston.error(`${funcName}invalid param: itemPkValue = ${itemPkValue}`)
         throw (new Error(`${funcName}invalid param: itemPkValue = ${itemPkValue}`))
       }
-      // get pk attribute name from table's key schema
-      // const tableKeySchema = await this.getKeySchemaForTable(tableName)
+      // get pk attribute name from table
+      const pkAttributeName = await this.getHashKeyAttributeNameForTable(tableName)
+      debug(`${funcName}pkAttributeName = ${pkAttributeName}`)
+      if (!pkAttributeName) {
+        winston.error(`${funcName}failed to get attribute name of partition key, pkAttributeName = ${pkAttributeName}`)
+        throw (new Error(`${funcName}failed to get attribute name of partition key, pkAttributeName = ${pkAttributeName}`))
+      }
       // prepare params
       const params = {
         TableName: tableName,
@@ -219,6 +226,7 @@ class SimpleDynamoDBUtil extends Object {
       const data = await this.docClient.get(params).promise()
       debug(`${funcName}data = ${JSON.stringify(data)}`)
       if (!data.Item) { // no 'Item' element returned if matching item not found
+        debug(`${funcName} no matching item found`)
         return null
       }
       return data.Item

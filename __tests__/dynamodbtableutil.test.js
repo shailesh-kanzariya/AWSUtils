@@ -8,12 +8,12 @@ const config = {
 }
 
 const ddbTableUtil = new DynamoDBTableUtil(config, 'users', 'id')
-xdescribe('DynamoDBTableUtil', () => {
+describe('DynamoDBTableUtil', () => {
   beforeEach(() => {
     jest.setTimeout(5000)
   }) // beforeEach
   // createNewItem
-  xdescribe('createNewItem', () => {
+  describe('createNewItem', () => {
     test('should create item successfully, when valid arguments passed', async () => {
       expect.assertions(1)
       const userItem = { id: '1', fName: 'John', lName: 'Doe' }
@@ -29,15 +29,16 @@ xdescribe('DynamoDBTableUtil', () => {
     }) // test
     test('should throw an error, when trying to create the similar item which already exist', async () => {
       expect.assertions(1)
-      const userItem = { id: '100', fName: 'John', lName: 'Doe' }
+      const pkValue = '100'
+      const userItem = { id: pkValue, fName: 'John', lName: 'Doe' }
       await ddbTableUtil.createNewItem(userItem)
       // new item to overwrite
-      const updatedItem = { id: '100', fName: 'Maria', lName: 'Bose' }
+      const updatedItem = { id: pkValue, fName: 'Maria', lName: 'Bose' }
       await expect(ddbTableUtil.createNewItem(updatedItem)).rejects.toThrowError('The conditional request failed')
     }) // test
   }) // describe('createNewItem')
   // createNewOrReplaceItem
-  xdescribe('createNewOrReplaceItem', () => {
+  describe('createNewOrReplaceItem', () => {
     test('should create item successfully, when valid arguments passed', async () => {
       expect.assertions(1)
       const userItem = { id: '1', fName: 'John', lName: 'Doe' }
@@ -63,25 +64,4 @@ xdescribe('DynamoDBTableUtil', () => {
       await expect(Item).toEqual(updatedItem)
     }) // test
   }) // describe('createNewOrReplaceItem')
-  // getItemFromTable
-  xdescribe('getItemFromTable', () => {
-    test('should return an item, when all valid arguments passed', async () => {
-      expect.assertions(1)
-      const pkValue = '300'
-      const userItem = { id: pkValue, fName: 'John', lName: 'Doe' }
-      await ddbTableUtil.createNewItem(userItem) // create an item first
-      // get item, now
-      const receivedItem = await ddbTableUtil.getItemFromTable('users', 'id', pkValue)
-      await expect(receivedItem).toEqual(userItem)
-    }) // test
-    test('should throw an error, when all valid arguments passed', async () => {
-      expect.assertions(1)
-      const pkValue = '300'
-      const userItem = { id: pkValue, fName: 'John', lName: 'Doe' }
-      await ddbTableUtil.createNewItem(userItem) // create an item first
-      // get item, now
-      const receivedItem = await ddbTableUtil.getItemFromTable('users', 'id', pkValue)
-      await expect(receivedItem).toEqual(userItem)
-    }) // test
-  }) // describe('getItemFromTable')
 }) // describe('SimpleDynamoDBUtil')

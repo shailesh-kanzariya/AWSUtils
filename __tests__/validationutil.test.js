@@ -6,7 +6,7 @@ describe('ValidationUtil', () => {
     jest.setTimeout(5000)
   }) // beforeEach
   // isValidString
-  xdescribe('isValidString', () => {
+  describe('isValidString', () => {
     test('should return an array, when valid array is passed', async () => {
       expect.assertions(1)
       const strParamList = ['Apple', 'Microsoft', 'Google', 'Amazon']
@@ -55,7 +55,7 @@ describe('ValidationUtil', () => {
     }) // test
   }) // describe('isValidString')
   // describe('isValidString')
-  xdescribe('isValidObject', () => {
+  describe('isValidObject', () => {
     test('should return an array, when valid object-array passed', async () => {
       expect.assertions(1)
       const strParamList = [{ name: 'Apple' }, ['Microsoft'], [123.67], { value: 'val' }]
@@ -113,7 +113,7 @@ describe('ValidationUtil', () => {
     }) // test
   }) // describe('isValidObject')
   // describe('isValidBoolean')
-  xdescribe('isValidBoolean', () => {
+  describe('isValidBoolean', () => {
     test('should return \'true\', when \'true\' boolean value passed', async () => {
       expect.assertions(1)
       const inParamVal = true

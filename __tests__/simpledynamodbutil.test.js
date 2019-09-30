@@ -12,6 +12,19 @@ describe('SimpleDynamoDBUtil', () => {
   beforeEach(() => {
     jest.setTimeout(5000)
   }) // beforeEach
+  // constructor
+  describe('constructor', () => {
+    test('should return SimpleDynamoDBUtil instance type, when valid arguments passed', async () => {
+      expect.assertions(1)
+      const validDDBUtilObj = new SimpleDynamoDBUtil(config)
+      await expect(validDDBUtilObj).toBeInstanceOf(SimpleDynamoDBUtil)
+    }) // test
+    test('should return SimpleDynamoDBUtil instance type, when no configs passed', async () => {
+      expect.assertions(1)
+      const validDDBUtilObj = new SimpleDynamoDBUtil(config)
+      await expect(validDDBUtilObj).toBeInstanceOf(SimpleDynamoDBUtil)
+    }) // test
+  }) // describe('constructor')
   // createNewItemInTable
   describe('createNewItemInTable', () => {
     test('should create item successfully, when valid arguments passed', async () => {

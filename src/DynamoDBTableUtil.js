@@ -4,34 +4,67 @@ const debug = require('debug')('DynamoDBTableUtil')
 const { SimpleDynamoDBUtil } = require('./SimpleDynamoDBUtil')
 const { ValidationUtil } = require('./common-utils/ValidationUtil')
 
+/**
+ * creates a new object of DynamoDBTableUtil, exposes 'AWS DynamoDB Table' helper functions
+ * @class DynamoDBTableUtil
+ */
 class DynamoDBTableUtil extends SimpleDynamoDBUtil {
-  constructor (options, tableName, pkAttributeName, skAttributeName = null) {
-    const funcName = 'constructor: '
-    debug(`${funcName} options = ${JSON.stringify(options)}, pkAttributeName = ${pkAttributeName}, skAttributeName = ${skAttributeName}`)
-    if (!(options && tableName && pkAttributeName && typeof tableName === 'string' &&
-      typeof pkAttributeName === 'string' && String(tableName).length > 0 && String(pkAttributeName).length > 0)) {
-      winston.error(`${funcName}invalid constructor argument`)
-      throw (new Error('invalid constructor argument'))
+  /**
+   * @param {*} tableName name of the table for which to create the object
+   * @param {*} [options=null] dynamodb config options
+   */
+  constructor (tableName, options = null) {
+    const funcName = 'constructor:'
+    if (options) {
+      super(options)
+    } else {
+      super()
     }
-    super(options)
+    if (!tableName || typeof tableName !== 'string' || String(tableName).length <= 0) {
+      winston.error(`${funcName}invalid tableName: = ${tableName}`)
+      throw (new Error(`${funcName}invalid tableName: = ${tableName}`))
+    }
     this.tableName = tableName
-    this.pkAttributeName = pkAttributeName
-    if (skAttributeName) {
-      if (!(typeof skAttributeName === 'string' && String(skAttributeName).length > 0)) {
-        winston.error(`${funcName}invalid constructor argument`)
-        throw (new Error('invalid constructor argument'))
-      }
-      this.skAttributeName = skAttributeName
-    }
   } // constructor
 
+  /**
+   * initializes the DynamoDBTableUtil object by setting hash and range key attribute names
+   */
+  async init () {
+    const funcName = 'init: '
+    try {
+      debug(`${funcName}this.tableName = ${this.tableName}`)
+      await ValidationUtil.isValidString([this.tableName])
+      // get hash and range key attributes name and set to this
+      const hashKeyAttributeName = await super.getHashKeyAttributeNameForTable(this.tableName)
+      debug(`${funcName}hashKeyAttributeName = ${hashKeyAttributeName}`)
+      const rangeKeyAttributeName = await super.getRangeKeyAttributeNameForTable(this.tableName)
+      debug(`${funcName}rangeKeyAttributeName = ${rangeKeyAttributeName}`)
+      // validate both key values are valid
+      await ValidationUtil.isValidString([hashKeyAttributeName])
+      // now, set to this
+      this.hashKeyAttributeName = hashKeyAttributeName
+      if (rangeKeyAttributeName) {
+        this.rangeKeyAttributeName = rangeKeyAttributeName
+      }
+      return this
+    } catch (error) {
+      winston.error(`${funcName}error = ${error}`)
+      throw (error)
+    }
+  }
+
+  /**
+   * creates new item in table, if similar item already exist then this does not overwrite instead it throws an error
+   * @param {JSON} itemJson item to create
+   */
   async createNewItem (itemJson) {
     const funcName = 'createNewItem: '
     try {
+      // validate input params
+      await ValidationUtil.isValidObject([itemJson])
       debug(`${funcName}itemJson = ${JSON.stringify(itemJson)}`)
-      // throw error if this.tableName and this.pkAttributeName values are not set
-      await ValidationUtil.isValidString([this.tableName, this.pkAttributeName])
-      const data = await super.createNewItemInTable(this.tableName, itemJson, false) // protect overwrite
+      const data = await super.createNewItemInTable(this.tableName, itemJson, false) // don;t overwrite
       return data
     } catch (error) {
       winston.error(`${funcName}error = ${error}`)
@@ -39,12 +72,16 @@ class DynamoDBTableUtil extends SimpleDynamoDBUtil {
     }
   } // createNewItem
 
+  /**
+   * creates new item if similar item already does not exist in table, instead it overwrites and replaces existing item with new item
+   * @param {*} itemJson item to create
+   */
   async createNewOrReplaceItem (itemJson) {
     const funcName = 'createNewOrReplaceItem: '
     try {
+      // validate input params
+      await ValidationUtil.isValidObject([itemJson])
       debug(`${funcName}itemJson = ${JSON.stringify(itemJson)}`)
-      // throw error if this.tableName and this.pkAttributeName values are not set
-      await ValidationUtil.isValidString([this.tableName, this.pkAttributeName])
       const data = await super.createNewItemInTable(this.tableName, itemJson) // overwrite existing similar item if exist
       return data
     } catch (error) {

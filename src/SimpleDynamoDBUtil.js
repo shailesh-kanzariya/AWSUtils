@@ -13,12 +13,17 @@ const RANGE_KEY_TYPE = 'RANGE'
  */
 class SimpleDynamoDBUtil extends Object {
   /**
-   * @param {JSON} options
+   * @param {JSON} [options=null] dynamodb config options
    */
-  constructor (options) {
+  constructor (options = null) {
     super()
-    this.dynamodb = new AWS.DynamoDB(options)
-    this.docClient = new AWS.DynamoDB.DocumentClient(options)
+    if (options) {
+      this.dynamodb = new AWS.DynamoDB(options)
+      this.docClient = new AWS.DynamoDB.DocumentClient(options)
+    } else {
+      this.dynamodb = new AWS.DynamoDB()
+      this.docClient = new AWS.DynamoDB.DocumentClient()
+    }
   } // constructor
 
   /**

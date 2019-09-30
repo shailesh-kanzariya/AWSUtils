@@ -7,11 +7,40 @@ const config = {
   region: 'local-env'
 }
 
-const ddbTableUtil = new DynamoDBTableUtil(config, 'users', 'id')
+const ddbTableUtil = new DynamoDBTableUtil('users', config)
 describe('DynamoDBTableUtil', () => {
   beforeEach(() => {
     jest.setTimeout(5000)
   }) // beforeEach
+  // constructor
+  describe('constructor', () => {
+    test('should return DynamoDBTableUtil instance type, when valid arguments passed', async () => {
+      expect.assertions(1)
+      const validDDBUtilObj = new DynamoDBTableUtil('users', config)
+      await expect(validDDBUtilObj).toBeInstanceOf(DynamoDBTableUtil)
+    }) // test
+    test('should throw an error, when null passed as table name', async () => {
+      expect.assertions(1)
+      async function test () {
+        const t = new DynamoDBTableUtil(null, config)
+        console.log(`t = ${t}`)
+      }
+      await expect(test()).rejects.toThrowError()
+    }) // test
+  }) // describe('constructor')
+  // init
+  describe('init', () => {
+    test('should return valid DynamoDBTableUtil object, when valid arguments passed', async () => {
+      expect.assertions(1)
+      const ddbTableUtilObj = await ddbTableUtil.init()
+      await expect(ddbTableUtilObj).toMatchObject(ddbTableUtil)
+    }) // test
+    test('should throw an error, when non-existing table name is passed during object construction time', async () => {
+      expect.assertions(1)
+      const invalidDDBTableUtilObj = new DynamoDBTableUtil('users-invalid', config)
+      await expect(invalidDDBTableUtilObj.init()).rejects.toThrowError(Error)
+    }) // test
+  }) // describe('init')
   // createNewItem
   describe('createNewItem', () => {
     test('should create item successfully, when valid arguments passed', async () => {
@@ -29,7 +58,7 @@ describe('DynamoDBTableUtil', () => {
     }) // test
     test('should throw an error, when trying to create the similar item which already exist', async () => {
       expect.assertions(1)
-      const pkValue = '100'
+      const pkValue = '101'
       const userItem = { id: pkValue, fName: 'John', lName: 'Doe' }
       await ddbTableUtil.createNewItem(userItem)
       // new item to overwrite

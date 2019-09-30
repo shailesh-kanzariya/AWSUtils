@@ -3,7 +3,10 @@ winston.add(new winston.transports.Console()) // add console as transport target
 const debug = require('debug')('SimpleDynamoDBUtil')
 const AWS = require('aws-sdk')
 const { ValidationUtil } = require('./common-utils/ValidationUtil')
-
+// constan values
+const KEYTYPE_KEY_NAME = 'KeyType'
+const HASH_KEY_TYPE = 'HASH'
+const RANGE_KEY_TYPE = 'RANGE'
 /**
  * creates a new object of SimpleDynamoDBUtil, exposes 'AWS DynamoDB' helper functions
  * @class SimpleDynamoDBUtil
@@ -55,15 +58,96 @@ class SimpleDynamoDBUtil extends Object {
       debug(`${funcName}tableName = ${tableName}}`)
       const data = await this.getTableInfo(tableName)
       debug(`${funcName}data = ${JSON.stringify(data)}`)
-      // extract key-schema info
-      if (data.Table.KeySchema.length > 0) {
-        const keySchema = data.Table.KeySchema[0]
-        debug(`${funcName}keySchema = ${JSON.stringify(keySchema)}`)
-        if (keySchema) {
-          return keySchema
-        }
+      debug(`${funcName}data.Table.KeySchema = ${JSON.stringify(data.Table.KeySchema)}`)
+      return data.Table.KeySchema // key schema array
+    } catch (error) {
+      winston.error(`${funcName}error = ${error}`)
+      throw (error)
+    }
+  } // getKeySchemaForTable
+
+  /**
+   * get hash key attribute name of the table
+   * @param {string} tableName table for which to get hash key attribute name
+   */
+  async getHashKeyAttributeNameForTable (tableName) {
+    const funcName = 'getHashKeyAttributeNameForTable: '
+    try {
+      // validate input params
+      await ValidationUtil.isValidString([tableName])
+      await ValidationUtil.isValidObject([this.dynamodb])
+      debug(`${funcName}tableName = ${tableName}}`)
+      const data = await this.getTableInfo(tableName)
+      debug(`${funcName}data = ${JSON.stringify(data)}`)
+      debug(`${funcName}data.Table.KeySchema = ${JSON.stringify(data.Table.KeySchema)}`)
+      const tableKeySchemaList = data.Table.KeySchema
+      let hashKeyAttributeName = null
+      if (tableKeySchemaList && Array.isArray(tableKeySchemaList)) {
+        // iterate both keys
+        for (const keySchema of tableKeySchemaList) {
+          debug(`${funcName}keySchema = ${JSON.stringify(keySchema)}`)
+          // check key type if hash or range
+          for (const key in keySchema) {
+            if (Object.prototype.hasOwnProperty.call(keySchema, key)) {
+              const keyVal = keySchema[key]
+              debug(`${funcName}key = ${key}, keyVal = ${keyVal}`)
+              if (key === KEYTYPE_KEY_NAME && keyVal === HASH_KEY_TYPE) {
+                hashKeyAttributeName = keySchema.AttributeName
+                debug(`${funcName}found hash key, hashKeyAttributeName = ${hashKeyAttributeName}`)
+                break
+              } // if
+            } // if
+          } //  for in
+          if (hashKeyAttributeName !== null) {
+            break
+          }
+        } // for of
       }
-      return null // no key schema found
+      return hashKeyAttributeName
+    } catch (error) {
+      winston.error(`${funcName}error = ${error}`)
+      throw (error)
+    }
+  } // getKeySchemaForTable
+
+  /**
+   * get range key attribute name of the table
+   * @param {string} tableName table for which to get range key attribute name
+   */
+  async getRangeKeyAttributeNameForTable (tableName) {
+    const funcName = 'getRangeKeyAttributeNameForTable: '
+    try {
+      // validate input params
+      await ValidationUtil.isValidString([tableName])
+      await ValidationUtil.isValidObject([this.dynamodb])
+      debug(`${funcName}tableName = ${tableName}}`)
+      const data = await this.getTableInfo(tableName)
+      debug(`${funcName}data = ${JSON.stringify(data)}`)
+      debug(`${funcName}data.Table.KeySchema = ${JSON.stringify(data.Table.KeySchema)}`)
+      const tableKeySchemaList = data.Table.KeySchema
+      let rangeKeyAttributeName = null
+      if (tableKeySchemaList && Array.isArray(tableKeySchemaList)) {
+        // iterate both keys
+        for (const keySchema of tableKeySchemaList) {
+          debug(`${funcName}keySchema = ${JSON.stringify(keySchema)}`)
+          // check key type if hash or range
+          for (const key in keySchema) {
+            if (Object.prototype.hasOwnProperty.call(keySchema, key)) {
+              const keyVal = keySchema[key]
+              debug(`${funcName}key = ${key}, keyVal = ${keyVal}`)
+              if (key === KEYTYPE_KEY_NAME && keyVal === RANGE_KEY_TYPE) {
+                rangeKeyAttributeName = keySchema.AttributeName
+                debug(`${funcName}found range key, rangeKeyAttributeName = ${rangeKeyAttributeName}`)
+                break
+              } // if
+            } // if
+          } //  for in
+          if (rangeKeyAttributeName !== null) {
+            break
+          }
+        } // for of
+      }
+      return rangeKeyAttributeName
     } catch (error) {
       winston.error(`${funcName}error = ${error}`)
       throw (error)
@@ -123,6 +207,8 @@ class SimpleDynamoDBUtil extends Object {
         winston.error(`${funcName}invalid param: itemPkValue = ${itemPkValue}`)
         throw (new Error(`${funcName}invalid param: itemPkValue = ${itemPkValue}`))
       }
+      // get pk attribute name from table's key schema
+      // const tableKeySchema = await this.getKeySchemaForTable(tableName)
       // prepare params
       const params = {
         TableName: tableName,

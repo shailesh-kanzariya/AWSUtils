@@ -8,12 +8,12 @@ const config = {
 }
 
 const ddbTableUtil = new DynamoDBTableUtil(config, 'users', 'id')
-describe('DynamoDBTableUtil', () => {
+xdescribe('DynamoDBTableUtil', () => {
   beforeEach(() => {
     jest.setTimeout(5000)
   }) // beforeEach
   // createNewItem
-  describe('createNewItem', () => {
+  xdescribe('createNewItem', () => {
     test('should create item successfully, when valid arguments passed', async () => {
       expect.assertions(1)
       const userItem = { id: '1', fName: 'John', lName: 'Doe' }
@@ -37,7 +37,7 @@ describe('DynamoDBTableUtil', () => {
     }) // test
   }) // describe('createNewItem')
   // createNewOrReplaceItem
-  describe('createNewOrReplaceItem', () => {
+  xdescribe('createNewOrReplaceItem', () => {
     test('should create item successfully, when valid arguments passed', async () => {
       expect.assertions(1)
       const userItem = { id: '1', fName: 'John', lName: 'Doe' }
@@ -63,4 +63,25 @@ describe('DynamoDBTableUtil', () => {
       await expect(Item).toEqual(updatedItem)
     }) // test
   }) // describe('createNewOrReplaceItem')
+  // getItemFromTable
+  xdescribe('getItemFromTable', () => {
+    test('should return an item, when all valid arguments passed', async () => {
+      expect.assertions(1)
+      const pkValue = '300'
+      const userItem = { id: pkValue, fName: 'John', lName: 'Doe' }
+      await ddbTableUtil.createNewItem(userItem) // create an item first
+      // get item, now
+      const receivedItem = await ddbTableUtil.getItemFromTable('users', 'id', pkValue)
+      await expect(receivedItem).toEqual(userItem)
+    }) // test
+    test('should throw an error, when all valid arguments passed', async () => {
+      expect.assertions(1)
+      const pkValue = '300'
+      const userItem = { id: pkValue, fName: 'John', lName: 'Doe' }
+      await ddbTableUtil.createNewItem(userItem) // create an item first
+      // get item, now
+      const receivedItem = await ddbTableUtil.getItemFromTable('users', 'id', pkValue)
+      await expect(receivedItem).toEqual(userItem)
+    }) // test
+  }) // describe('getItemFromTable')
 }) // describe('SimpleDynamoDBUtil')

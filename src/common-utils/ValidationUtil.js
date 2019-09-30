@@ -27,7 +27,7 @@ class ValidationUtil extends Object {
         debug(`${funcName}strListToValidate length = 1, so not going to iterate for loop`)
         const stringElement = strListToValidate[0]
         debug(`${funcName}stringElement = ${stringElement}`)
-        if (!(typeof stringElement === 'string' && stringElement !== null && stringElement !== undefined)) {
+        if (!(stringElement !== null && stringElement !== undefined && typeof stringElement === 'string')) {
           debug(`${funcName}pushing invalid param stringElement = ${stringElement}`)
           invalidParamsList.push(stringElement)
         } else if (invalidateEmptyString === true) {
@@ -40,7 +40,7 @@ class ValidationUtil extends Object {
         // validate each string-element from the list
         for (const stringElement of strListToValidate) {
           debug(`${funcName}stringElement = ${stringElement}`)
-          if (!(typeof stringElement === 'string' && stringElement !== null && stringElement !== undefined)) {
+          if (!(stringElement !== null && stringElement !== undefined && typeof stringElement === 'string')) {
             debug(`${funcName}pushing invalid param stringElement = ${stringElement}`)
             invalidParamsList.push(stringElement)
           } else if (invalidateEmptyString === true) {
@@ -80,7 +80,7 @@ class ValidationUtil extends Object {
         debug(`${funcName}objListToValidate length = 1, so not going to iterate for loop`)
         const obj = objListToValidate[0]
         debug(`${funcName}obj = ${JSON.stringify(obj)}`)
-        if (!(typeof obj === 'object' && obj !== null && obj !== undefined)) {
+        if (!(obj !== null && obj !== undefined && typeof obj === 'object')) {
           debug(`${funcName}pushing invalid param obj = ${obj}`)
           invalidParamsList.push(obj)
         } // if
@@ -88,7 +88,7 @@ class ValidationUtil extends Object {
         // validate each object from the list
         for (const obj of objListToValidate) {
           debug(`${funcName}obj = ${JSON.stringify(obj)}`)
-          if (!(typeof obj === 'object' && obj !== null && obj !== undefined)) {
+          if (!(obj !== null && obj !== undefined && typeof obj === 'object')) {
             debug(`${funcName}pushing invalid param obj = ${obj}`)
             invalidParamsList.push(obj)
           } // if
@@ -99,6 +99,25 @@ class ValidationUtil extends Object {
         throw (new Error(`invalid data, invalidParamsList = ${JSON.stringify(invalidParamsList)}`))
       } // if
       return objListToValidate
+    } catch (error) {
+      winston.error(`${funcName}error = ${error}`)
+      throw (error)
+    }
+  } // function
+
+  /**
+   * validates that value of parameter is of valid Boolean type (true or false) and it is not null, undefined
+   * @param {Boolean} inParamValue parameter value to check
+   */
+  static async isValidBoolean (inParamValue) {
+    const funcName = 'isValidBoolean: '
+    try {
+      if (!(inParamValue !== null && inParamValue !== undefined && typeof inParamValue === 'boolean')) {
+        debug(`${funcName}invalid data type, inParamValue = ${inParamValue}`)
+        throw (new Error(`invalid data type, inParamValue = ${inParamValue}`))
+      } // if
+      debug(`${funcName}inParamValue = ${inParamValue}`)
+      return inParamValue
     } catch (error) {
       winston.error(`${funcName}error = ${error}`)
       throw (error)

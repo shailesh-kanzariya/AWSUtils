@@ -1,11 +1,12 @@
 const { ValidationUtil } = require('./../src/common-utils/ValidationUtil')
 
-xdescribe('ValidationUtil', () => {
+describe('ValidationUtil', () => {
   // uni test 'isValidString' function
   beforeEach(() => {
     jest.setTimeout(5000)
   }) // beforeEach
-  describe('isValidString', () => {
+  // isValidString
+  xdescribe('isValidString', () => {
     test('should return an array, when valid array is passed', async () => {
       expect.assertions(1)
       const strParamList = ['Apple', 'Microsoft', 'Google', 'Amazon']
@@ -53,7 +54,8 @@ xdescribe('ValidationUtil', () => {
       await expect(ValidationUtil.isValidString()).rejects.toThrowError(Error)
     }) // test
   }) // describe('isValidString')
-  describe('isValidObject', () => {
+  // describe('isValidString')
+  xdescribe('isValidObject', () => {
     test('should return an array, when valid object-array passed', async () => {
       expect.assertions(1)
       const strParamList = [{ name: 'Apple' }, ['Microsoft'], [123.67], { value: 'val' }]
@@ -110,4 +112,39 @@ xdescribe('ValidationUtil', () => {
       await expect(ValidationUtil.isValidObject('non-array type arg')).rejects.toThrowError(Error)
     }) // test
   }) // describe('isValidObject')
+  // describe('isValidBoolean')
+  xdescribe('isValidBoolean', () => {
+    test('should return \'true\', when \'true\' boolean value passed', async () => {
+      expect.assertions(1)
+      const inParamVal = true
+      const boolValue = await ValidationUtil.isValidBoolean(inParamVal)
+      await expect(boolValue).toEqual(inParamVal)
+    }) // test
+    test('should return \'false\', when \'false\' boolean value passed', async () => {
+      expect.assertions(1)
+      const inParamVal = false
+      const boolValue = await ValidationUtil.isValidBoolean(inParamVal)
+      await expect(boolValue).toEqual(inParamVal)
+    }) // test
+    test('should thrown an error, when string type value passed', async () => {
+      expect.assertions(1)
+      await expect(ValidationUtil.isValidBoolean('string type')).rejects.toThrowError(Error)
+    }) // test
+    test('should thrown an error, when number type value passed', async () => {
+      expect.assertions(1)
+      await expect(ValidationUtil.isValidBoolean(123.456)).rejects.toThrowError(Error)
+    }) // test
+    test('should thrown an error, when an object type passed', async () => {
+      expect.assertions(1)
+      await expect(ValidationUtil.isValidBoolean([true, false])).rejects.toThrowError(Error)
+    }) // test
+    test('should thrown an error, when null passed', async () => {
+      expect.assertions(1)
+      await expect(ValidationUtil.isValidBoolean(null)).rejects.toThrowError(Error)
+    }) // test
+    test('should thrown an error, when no argument passed', async () => {
+      expect.assertions(1)
+      await expect(ValidationUtil.isValidBoolean()).rejects.toThrowError(Error)
+    }) // test
+  }) // describe('isValidBoolean')
 }) // describe('ValidationUtil')

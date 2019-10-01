@@ -111,6 +111,44 @@ class DynamoDBTableUtil extends SimpleDynamoDBUtil {
       throw (error)
     }
   } // getItem
+
+  /**
+   * find the specified item, if not found then create it
+   * @param {JSON} itemJSON item to find or create
+   */
+  async findOrCreateItem (itemJSON) {
+    const funcName = 'findOrCreateItem: '
+    try {
+      // validate input params
+      await ValidationUtil.isValidObject([itemJSON])
+      debug(`${funcName}itemJSON = ${JSON.stringify(itemJSON)}`)
+      const hashKeyAttributeName = await super.getHashKeyAttributeNameForTable(this.tableName)
+      debug(`${funcName}hashKeyAttributeName = ${hashKeyAttributeName}`)
+      if (!hashKeyAttributeName) {
+        winston.error(`${funcName}invalid haskkey attribute name: ${hashKeyAttributeName}`)
+        throw (new Error(`${funcName}invalid haskkey attribute name: ${hashKeyAttributeName}`))
+      }
+      // get value of hashkey from itemJSON
+      const itemPkValue = itemJSON[hashKeyAttributeName]
+      if (!itemPkValue) {
+        winston.error(`${funcName}invalid haskkey attribute value: ${itemPkValue}`)
+        throw (new Error(`${funcName}invalid haskkey attribute value: ${itemPkValue}`))
+      }
+      // first, try to get an item
+      const dataItem = await super.getItemFromTable(this.tableName, itemPkValue)
+      debug(`${funcName}dataItem = ${JSON.stringify(dataItem)}`)
+      if (dataItem) {
+        return dataItem
+      }
+      // else create that item
+      const data = await super.createNewItemInTable(this.tableName, itemJSON)
+      debug(`${funcName}data = ${JSON.stringify(data)}`)
+      return data
+    } catch (error) {
+      winston.error(`${funcName}error = ${error}`)
+      throw (error)
+    }
+  } // getItem
 } // class
 module.exports = {
   DynamoDBTableUtil

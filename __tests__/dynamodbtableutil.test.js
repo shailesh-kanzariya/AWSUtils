@@ -118,4 +118,48 @@ describe('DynamoDBTableUtil', () => {
       await expect(ddbTableUtil.getItem(null)).rejects.toThrowError(Error)
     }) // test
   }) // describe('getItem')
+  // findOrCreateItem
+  describe('findOrCreateItem', () => {
+    test('should create new item and return empty json, when trying to find non-existing item', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const expctedItemData = {}
+      const newItem = { id: itemPkValue, fName: 'John', lName: 'Doe' }
+      const dataItem = await ddbTableUtil.findOrCreateItem(newItem)
+      console.log(`dataItem = ${JSON.stringify(dataItem)}`)
+      await expect(dataItem).toEqual(expctedItemData)
+    }) // test
+    test('should return fetched item, when trying to find existing item', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const newItem = { id: itemPkValue, fName: 'John', lName: 'Doe' }
+      // create item, first
+      await ddbTableUtil.createNewItem(newItem)
+      // try to find/create item
+      const dataItem = await ddbTableUtil.findOrCreateItem(newItem)
+      console.log(`dataItem = ${JSON.stringify(dataItem)}`)
+      await expect(dataItem).toEqual(newItem)
+    }) // test
+    test('should throw an error, when trying to find/create item with invalid pk-attribute-name', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const newItem = { idInvalid: itemPkValue, fName: 'John', lName: 'Doe' }
+      await expect(ddbTableUtil.findOrCreateItem(newItem)).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when trying to find/create item with invalid pk-attribute-value', async () => {
+      expect.assertions(1)
+      const newItem = { idInvalid: null, fName: 'John', lName: 'Doe' }
+      await expect(ddbTableUtil.findOrCreateItem(newItem)).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when trying to find/create item with invalid pk-attribute-value type', async () => {
+      expect.assertions(1)
+      const itemPkValue = 123.45
+      const newItem = { id: itemPkValue, fName: 'John', lName: 'Doe' }
+      await expect(ddbTableUtil.findOrCreateItem(newItem)).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when trying to find/create null item', async () => {
+      expect.assertions(1)
+      await expect(ddbTableUtil.findOrCreateItem(null)).rejects.toThrowError(Error)
+    }) // test
+  }) // describe('findOrCreateItem')
 }) // describe('DynamoDBTableUtil')

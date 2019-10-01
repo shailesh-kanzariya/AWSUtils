@@ -1,6 +1,6 @@
 const { ValidationUtil } = require('./../src/common-utils/ValidationUtil')
 
-describe('ValidationUtil', () => {
+xdescribe('ValidationUtil', () => {
   // uni test 'isValidString' function
   beforeEach(() => {
     jest.setTimeout(5000)

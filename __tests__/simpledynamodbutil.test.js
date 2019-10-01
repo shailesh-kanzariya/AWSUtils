@@ -1,4 +1,5 @@
 const { SimpleDynamoDBUtil } = require('../src/SimpleDynamoDBUtil')
+const uuid = require('uuid/v1')
 const usersTableConfigs = require('./../jest-dynamodb-config').tables[0]
 // ddb config options to run local
 const config = {
@@ -13,7 +14,7 @@ describe('SimpleDynamoDBUtil', () => {
     jest.setTimeout(5000)
   }) // beforeEach
   // constructor
-  describe('constructor', () => {
+  xdescribe('constructor', () => {
     test('should return SimpleDynamoDBUtil instance type, when valid arguments passed', async () => {
       expect.assertions(1)
       const validDDBUtilObj = new SimpleDynamoDBUtil(config)
@@ -26,18 +27,19 @@ describe('SimpleDynamoDBUtil', () => {
     }) // test
   }) // describe('constructor')
   // createNewItemInTable
-  describe('createNewItemInTable', () => {
+  xdescribe('createNewItemInTable', () => {
     test('should create item successfully, when valid arguments passed', async () => {
       expect.assertions(1)
-      const pkValue = '1234'
-      const userItem = { id: pkValue, hello: 'world' }
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, hello: 'world' }
       await simpleDDBUtil.createNewItemInTable('users', userItem)
-      const { Item } = await simpleDDBUtil.docClient.get({ TableName: 'users', Key: { id: pkValue } }).promise()
+      const { Item } = await simpleDDBUtil.docClient.get({ TableName: 'users', Key: { id: itemPkValue } }).promise()
       await expect(Item).toEqual(userItem)
     }) // test
     test('should throw an error, when non-existent table name passed', async () => {
       expect.assertions(1)
-      const userItem = { id: '1', hello: 'world' }
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, hello: 'world' }
       await expect(simpleDDBUtil.createNewItemInTable('users-invalid', userItem)).rejects.toThrowError('Cannot do operations on a non-existent table')
     }) // test
     test('should throw an error, when invalid userItem passed', async () => {
@@ -47,28 +49,30 @@ describe('SimpleDynamoDBUtil', () => {
     }) // test
     test('should overwrite existing item, when similar item already exist', async () => {
       expect.assertions(2)
-      const userItem = { id: '100', hello: 'world' }
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, hello: 'world' }
       await simpleDDBUtil.createNewItemInTable('users', userItem)
       // new item to overwrite
-      const updatedUserItem = { id: '100', hello: 'AWS' }
+      const updatedUserItem = { id: itemPkValue, hello: 'AWS' }
       const { Attributes } = await simpleDDBUtil.createNewItemInTable('users', updatedUserItem) // overwrite an existing item
       console.log(`old item = ${JSON.stringify(Attributes)}`)
       // get overwritten item
-      const { Item } = await simpleDDBUtil.docClient.get({ TableName: 'users', Key: { id: '100' } }).promise()
+      const { Item } = await simpleDDBUtil.docClient.get({ TableName: 'users', Key: { id: itemPkValue } }).promise()
       await expect(Item).toEqual(updatedUserItem)
       await expect(Attributes).toEqual(userItem)
     }) // test
     test('should prevent overwrite to existing item and throw an error', async () => {
       expect.assertions(1)
-      const userItem = { id: '200', hello: 'world' }
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, hello: 'world' }
       await simpleDDBUtil.createNewItemInTable('users', userItem)
       // new item to overwrite
-      const updatedUserItem = { id: '200', hello: 'AWS' }
+      const updatedUserItem = { id: itemPkValue, hello: 'AWS' }
       await expect(simpleDDBUtil.createNewItemInTable('users', updatedUserItem, false)).rejects.toThrowError('The conditional request failed')
     }) // test
   }) // describe('createNewItemInTable')
   // getTableInfo
-  describe('getTableInfo', () => {
+  xdescribe('getTableInfo', () => {
     test('should return information of the table, when valid arguments passed', async () => {
       expect.assertions(3)
       const tableInfo = await simpleDDBUtil.getTableInfo('users')
@@ -90,7 +94,7 @@ describe('SimpleDynamoDBUtil', () => {
     }) // test
   }) // describe('getTableInfo')
   // getKeySchemaForTable
-  describe('getKeySchemaForTable', () => {
+  xdescribe('getKeySchemaForTable', () => {
     test('should return keyschema of the table, when valid arguments passed', async () => {
       expect.assertions(1)
       const tableKeySchema = await simpleDDBUtil.getKeySchemaForTable('users')
@@ -110,7 +114,7 @@ describe('SimpleDynamoDBUtil', () => {
     }) // test
   }) // describe('getKeySchemaForTable')
   // getHashKeyAttributeNameForTable
-  describe('getHashKeyAttributeNameForTable', () => {
+  xdescribe('getHashKeyAttributeNameForTable', () => {
     test('should return hashkey attribute name of the table, when valid arguments passed', async () => {
       expect.assertions(1)
       const hashKeyAttributeName = await simpleDDBUtil.getHashKeyAttributeNameForTable('users')
@@ -126,7 +130,7 @@ describe('SimpleDynamoDBUtil', () => {
     }) // test
   }) // describe('getHashKeyAttributeNameForTable')
   // getRangeKeyAttributeNameForTable
-  describe('getRangeKeyAttributeNameForTable', () => {
+  xdescribe('getRangeKeyAttributeNameForTable', () => {
     test('should return rangekey attribute name of the table, when valid arguments passed', async () => {
       expect.assertions(1)
       const rangeKeyAttributeName = await simpleDDBUtil.getRangeKeyAttributeNameForTable('users-with-pk-and-sk')
@@ -149,10 +153,10 @@ describe('SimpleDynamoDBUtil', () => {
     }) // test
   }) // describe('getRangeKeyAttributeNameForTable')
   // getItemFromTable
-  describe('getItemFromTable', () => {
+  xdescribe('getItemFromTable', () => {
     test('should return valid item, when all valid arguments passed', async () => {
       expect.assertions(1)
-      const itemPkValue = '300'
+      const itemPkValue = uuid()
       const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe' }
       await simpleDDBUtil.createNewItemInTable('users', userItem) // create an item first
       // get item, now
@@ -161,14 +165,18 @@ describe('SimpleDynamoDBUtil', () => {
     }) // test
     test('should return null, when trying to get non-existing item', async () => {
       expect.assertions(1)
-      const itemPkValue = '12345'
+      const itemPkValue = uuid()
       const receivedItem = await simpleDDBUtil.getItemFromTable('users', itemPkValue)
       console.log(`receivedItem = ${receivedItem}`)
       await expect(receivedItem).toEqual(null)
     }) // test
     test('should throw an error, when non-existent table name passed', async () => {
       expect.assertions(1)
-      const itemPkValue = '300'
+      const itemPkValue = uuid()
+      // first create valid item in table
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe' }
+      await simpleDDBUtil.createNewItemInTable('users', userItem)
+      // try to get that item in invalid tablename
       await expect(simpleDDBUtil.getItemFromTable('users-invalid', itemPkValue)).rejects.toThrowError('Cannot do operations on a non-existent table')
     }) // test
     test('should throw an error, when no argument passed', async () => {

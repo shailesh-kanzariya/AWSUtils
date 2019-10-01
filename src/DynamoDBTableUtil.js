@@ -89,6 +89,28 @@ class DynamoDBTableUtil extends SimpleDynamoDBUtil {
       throw (error)
     }
   } // createNewItem
+
+  /**
+   * get specified item from table
+   * @param {*} itemPkValue value of partition-key attribute of the item to get
+   */
+  async getItem (itemPkValue) {
+    const funcName = 'getItem: '
+    try {
+      // validate input params
+      if (itemPkValue === null || itemPkValue === undefined) {
+        winston.error(`${funcName}invalid value: itemPkValue = ${itemPkValue}`)
+        throw (new Error(`${funcName}invalid value: itemPkValue = ${itemPkValue}`))
+      }
+      debug(`${funcName}itemPkValue = ${itemPkValue}`)
+      const dataItem = await super.getItemFromTable(this.tableName, itemPkValue)
+      debug(`${funcName}dataItem = ${JSON.stringify(dataItem)}`)
+      return dataItem
+    } catch (error) {
+      winston.error(`${funcName}error = ${error}`)
+      throw (error)
+    }
+  } // getItem
 } // class
 module.exports = {
   DynamoDBTableUtil

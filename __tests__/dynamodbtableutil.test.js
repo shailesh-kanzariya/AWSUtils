@@ -162,7 +162,7 @@ describe('DynamoDBTableUtil', () => {
     }) // test
   }) // describe('findOrCreateItem')
   // updateItemByAppendingList
-  describe('updateItemByAppendingList', () => {
+  xdescribe('updateItemByAppendingList', () => {
     test('should return updated item with list appended, when trying to append list to the existing list of item-attribute', async () => {
       expect.assertions(1)
       const itemPkValue = uuid()
@@ -262,4 +262,99 @@ describe('DynamoDBTableUtil', () => {
       await expect(ddbTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
     }) // test
   }) // describe('updateItemByAppendingList')
+  // updateItemByRemovingList
+  describe('updateItemByRemovingList', () => {
+    test('should return updated item with list removed, when trying to remove list from the existing list of item-attribute', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft', 'Google', 'Amazon'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      // elements to remove
+      const orgNameItemsToRemove = ['Google', 'Amazon']
+      // const updatedList = userItem.orgsNames.splice()
+      userItem.orgsNames = ['Apple', 'Microsoft']
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await ddbTableUtil.updateItemByRemovingList(itemPkValue, 'orgsNames', orgNameItemsToRemove)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should return updated item with empty list, when trying to remove all items from the existing list of item-attribute', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft', 'Google', 'Amazon'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      // elements to remove
+      const orgNameItemsToRemove = ['Apple', 'Microsoft', 'Google', 'Amazon']
+      // const updatedList = userItem.orgsNames.splice()
+      userItem.orgsNames = []
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await ddbTableUtil.updateItemByRemovingList(itemPkValue, 'orgsNames', orgNameItemsToRemove)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should return updated item intact, when trying to remove list of items which do not exist in the item-attribute list', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft', 'Google', 'Amazon'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      // elements to remove
+      const orgNameItemsToRemove = ['ABC', 'XYZ']
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await ddbTableUtil.updateItemByRemovingList(itemPkValue, 'orgsNames', orgNameItemsToRemove)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should return updated item intact, when trying to remove list of different-types which do not exist in the item-attribute list', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft', 'Google', 'Amazon'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      // elements to remove
+      const orgNameItemsToRemove = [1001, 2002]
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await ddbTableUtil.updateItemByRemovingList(itemPkValue, 'orgsNames', orgNameItemsToRemove)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should throw an error, when trying to update item in non-existent table', async () => {
+      expect.assertions(1)
+      const invalidTableUtil = new DynamoDBTableUtil('users-invalid', config)
+      const itemPkValue = uuid()
+      await expect(invalidTableUtil.updateItemByRemovingList(itemPkValue, 'orgsNames', ['Apple', 'Google'])).rejects.toThrowError('Cannot do operations on a non-existent table')
+    }) // test
+    test('should throw an error, when trying to remove null list', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      await expect(ddbTableUtil.updateItemByRemovingList(itemPkValue, 'orgsNames', null)).rejects.toThrowError('invalid data')
+    }) // test
+    test('should throw an error, when trying to remove JSON object', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      await expect(ddbTableUtil.updateItemByRemovingList(itemPkValue, 'orgsNames', { orgName1: 'Apple', orgName2: 'Microsoft' })).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when null item pk value is passed', async () => {
+      expect.assertions(1)
+      await expect(ddbTableUtil.updateItemByRemovingList(null, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when non-string type item pk value is passed', async () => {
+      expect.assertions(1)
+      const itemPkValue = 1002
+      await expect(ddbTableUtil.updateItemByRemovingList(itemPkValue, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when non-string type item pk value is passed', async () => {
+      expect.assertions(1)
+      const itemPkValue = true
+      await expect(ddbTableUtil.updateItemByRemovingList(itemPkValue, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
+    }) // test
+  }) // describe('updateItemByRemovingList')
 }) // describe('DynamoDBTableUtil')

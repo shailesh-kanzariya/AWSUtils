@@ -143,7 +143,7 @@ class DynamoDBTableUtil extends SimpleDynamoDBUtil {
       // else create that item
       const data = await super.createNewItemInTable(this.tableName, itemJSON)
       debug(`${funcName}data = ${JSON.stringify(data)}`)
-      return data
+      return itemJSON // return item that created successfully
     } catch (error) {
       winston.error(`${funcName}error = ${error}`)
       throw (error)

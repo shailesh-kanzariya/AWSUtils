@@ -120,14 +120,13 @@ describe('DynamoDBTableUtil', () => {
   }) // describe('getItem')
   // findOrCreateItem
   describe('findOrCreateItem', () => {
-    test('should create new item and return empty json, when trying to find non-existing item', async () => {
+    test('should return newly created item, when trying to find non-existing item', async () => {
       expect.assertions(1)
       const itemPkValue = uuid()
-      const expctedItemData = {}
       const newItem = { id: itemPkValue, fName: 'John', lName: 'Doe' }
       const dataItem = await ddbTableUtil.findOrCreateItem(newItem)
       console.log(`dataItem = ${JSON.stringify(dataItem)}`)
-      await expect(dataItem).toEqual(expctedItemData)
+      await expect(dataItem).toEqual(newItem)
     }) // test
     test('should return fetched item, when trying to find existing item', async () => {
       expect.assertions(1)

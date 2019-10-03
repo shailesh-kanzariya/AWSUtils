@@ -189,7 +189,7 @@ describe('SimpleDynamoDBUtil', () => {
     }) // test
   }) // describe('getItemFromTable')
   // updateItemInTableByAppendingList
-  describe('updateItemInTableByAppendingList', () => {
+  xdescribe('updateItemInTableByAppendingList', () => {
     test('should return updated item with list appended, when trying to append list to the existing list of item-attribute', async () => {
       expect.assertions(1)
       const itemPkValue = uuid()

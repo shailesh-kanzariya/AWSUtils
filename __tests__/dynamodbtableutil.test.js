@@ -161,4 +161,105 @@ describe('DynamoDBTableUtil', () => {
       await expect(ddbTableUtil.findOrCreateItem(null)).rejects.toThrowError(Error)
     }) // test
   }) // describe('findOrCreateItem')
+  // updateItemByAppendingList
+  describe('updateItemByAppendingList', () => {
+    test('should return updated item with list appended, when trying to append list to the existing list of item-attribute', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      // update userItem json by appending more elements into 'orgsNames' list
+      const orgNameItemsToAppend = ['Google', 'Amazon']
+      const updatedList = userItem.orgsNames.concat(orgNameItemsToAppend)
+      userItem.orgsNames = updatedList
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await ddbTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNames', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should return updated item adding attribute and list appended to added-attribute, when trying to append list to non-existing item-attribute ', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe' } // 'orgsNames' don't exist
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      // add new item-attribute having list
+      const orgNameItemsToAppend = ['Google', 'Amazon']
+      userItem.orgsNames = orgNameItemsToAppend
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await ddbTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNames', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should add a new item to the table if it does not already exist, when trying to append list to non-existing item', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      // add new item-attribute having list
+      const orgNameItemsToAppend = ['Google', 'Amazon']
+      const updatedItem = await ddbTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNames', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      // get added item
+      const fetchedItem = await ddbTableUtil.getItem(itemPkValue)
+      console.log(`fetchedItem = ${JSON.stringify(fetchedItem)}`)
+      await expect(updatedItem).toEqual(fetchedItem)
+    }) // test
+    test('should return updated item with list appended, when trying to append number-type-list to the existing string-type-list of item-attribute', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      // update userItem json by appending more elements into 'orgsNames' list
+      const orgNameItemsToAppend = [1001, 2001]
+      const updatedList = userItem.orgsNames.concat(orgNameItemsToAppend)
+      userItem.orgsNames = updatedList
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await ddbTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNames', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should throw an error, when trying to update item in non-existent table', async () => {
+      expect.assertions(1)
+      const invalidTableUtil = new DynamoDBTableUtil('users-invalid', config)
+      const itemPkValue = uuid()
+      await expect(invalidTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNames', ['Apple', 'Google'])).rejects.toThrowError('Cannot do operations on a non-existent table')
+    }) // test
+    test('should add non-existing attribute in item and assign list to it, when trying to append list to the non-existing item-attribute', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      // update userItem json by appending more elements into 'orgsNames' list
+      const orgNameItemsToAppend = ['Google', 'Amazon']
+      userItem.orgsNamesNonExisting = orgNameItemsToAppend
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await ddbTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNamesNonExisting', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should throw an error, when trying to append null list', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await ddbTableUtil.createNewItem(userItem)
+      await expect(ddbTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNames', null)).rejects.toThrowError('invalid data')
+    }) // test
+    test('should throw an error, when null item pk value is passed', async () => {
+      expect.assertions(1)
+      await expect(ddbTableUtil.updateItemByAppendingList(null, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when non-string type item pk value is passed', async () => {
+      expect.assertions(1)
+      const itemPkValue = 1002
+      await expect(ddbTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when non-string type item pk value is passed', async () => {
+      expect.assertions(1)
+      const itemPkValue = true
+      await expect(ddbTableUtil.updateItemByAppendingList(itemPkValue, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
+    }) // test
+  }) // describe('updateItemByAppendingList')
 }) // describe('DynamoDBTableUtil')

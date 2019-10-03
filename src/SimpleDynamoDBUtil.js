@@ -251,14 +251,14 @@ class SimpleDynamoDBUtil extends Object {
    * @param {String} tableName table in which the item to update
    * @param {any} itemPkValue pk value of the item to update
    * @param {String} listAttributeName attribute name for which to append the list
-   * @param {Array} newList list to append
+   * @param {Array} listToAppend list to append
    */
-  async updateItemInTableByAppendingList (tableName, itemPkValue, listAttributeName, newList) {
+  async updateItemInTableByAppendingList (tableName, itemPkValue, listAttributeName, listToAppend) {
     const funcName = 'updateItemByAppendingList: '
     try {
       // validate input params
       await ValidationUtil.isValidString([tableName, listAttributeName])
-      await ValidationUtil.isValidObject([newList])
+      await ValidationUtil.isValidObject([listToAppend])
       debug(`${funcName}itemPkValue = ${itemPkValue}`)
       if (itemPkValue === null || itemPkValue === undefined) {
         winston.error(`${funcName}invalid param: itemPkValue = ${itemPkValue}`)
@@ -280,7 +280,7 @@ class SimpleDynamoDBUtil extends Object {
           '#a1': listAttributeName
         },
         ExpressionAttributeValues: {
-          ':v1': newList,
+          ':v1': listToAppend,
           ':v2': []
         },
         ReturnValues: 'ALL_NEW'

@@ -119,7 +119,7 @@ describe('DynamoDBTableUtil', () => {
     }) // test
   }) // describe('getItem')
   // findOrCreateItem
-  describe('findOrCreateItem', () => {
+  xdescribe('findOrCreateItem', () => {
     test('should return newly created item, when trying to find non-existing item', async () => {
       expect.assertions(1)
       const itemPkValue = uuid()

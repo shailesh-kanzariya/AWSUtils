@@ -148,7 +148,38 @@ class DynamoDBTableUtil extends SimpleDynamoDBUtil {
       winston.error(`${funcName}error = ${error}`)
       throw (error)
     }
-  } // getItem
+  } // findOrCreateItem
+
+  /**
+   * updates an item by appending 'newList' to the existing list. If there is no existing list then
+   *  it simply creates emptly list first and appends the 'newList' for specified 'listAttributeName' of the item
+   * If the specified item does not exist then it adds the new item to the table
+   * @param {*} itemPkValue pk value of the item to update
+   * @param {*} listAttributeName attribute name for which to append the list
+   * @param {*} newList list to append
+   */
+  /*
+  async updateItemByAppendingList (itemPkValue, listAttributeName, newList) {
+    const funcName = 'updateItemByAppendingList: '
+    try {
+      // validate input params
+      if (itemPkValue === null || itemPkValue === undefined) {
+        winston.error(`${funcName}invalid value: itemPkValue = ${itemPkValue}`)
+        throw (new Error(`${funcName}invalid value: itemPkValue = ${itemPkValue}`))
+      }
+      debug(`${funcName}itemPkValue = ${itemPkValue}`)
+      await ValidationUtil.isValidString([listAttributeName])
+      await ValidationUtil.isValidObject([newList])
+      // update item params
+      const params = {
+
+      }
+    } catch (error) {
+      winston.error(`${funcName}error = ${error}`)
+      throw (error)
+    }
+  } // updateItemByAppendingList
+  */
 } // class
 module.exports = {
   DynamoDBTableUtil

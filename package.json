@@ -4,7 +4,7 @@
   "description": "little simpler and easier helper functions for aws-sdk-dynamodb",
   "main": "index.js",
   "scripts": {
-    "test": "standard && DEBUG=DynamoDBTableUtil jest"
+    "test": "standard && DEBUG=SimpleDynamoDBUtil jest"
   },
   "jest": {
     "verbose": false,

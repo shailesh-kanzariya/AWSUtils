@@ -54,12 +54,12 @@ describe('SimpleDynamoDBUtil', () => {
       await simpleDDBUtil.createNewItemInTable('users', userItem)
       // new item to overwrite
       const updatedUserItem = { id: itemPkValue, hello: 'AWS' }
-      const { Attributes } = await simpleDDBUtil.createNewItemInTable('users', updatedUserItem) // overwrite an existing item
-      console.log(`old item = ${JSON.stringify(Attributes)}`)
+      const oldItem = await simpleDDBUtil.createNewItemInTable('users', updatedUserItem) // overwrite an existing item
+      console.log(`old item = ${JSON.stringify(oldItem)}`)
       // get overwritten item
       const { Item } = await simpleDDBUtil.docClient.get({ TableName: 'users', Key: { id: itemPkValue } }).promise()
       await expect(Item).toEqual(updatedUserItem)
-      await expect(Attributes).toEqual(userItem)
+      await expect(oldItem).toEqual(userItem)
     }) // test
     test('should prevent overwrite to existing item and throw an error', async () => {
       expect.assertions(1)
@@ -188,4 +188,104 @@ describe('SimpleDynamoDBUtil', () => {
       await expect(simpleDDBUtil.getItemFromTable('users')).rejects.toThrowError(Error)
     }) // test
   }) // describe('getItemFromTable')
+  // updateItemInTableByAppendingList
+  describe('updateItemInTableByAppendingList', () => {
+    test('should return updated item with list appended, when trying to append list to the existing list of item-attribute', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await simpleDDBUtil.createNewItemInTable('users', userItem)
+      // update userItem json by appending more elements into 'orgsNames' list
+      const orgNameItemsToAppend = ['Google', 'Amazon']
+      const updatedList = userItem.orgsNames.concat(orgNameItemsToAppend)
+      userItem.orgsNames = updatedList
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await simpleDDBUtil.updateItemInTableByAppendingList('users', itemPkValue, 'orgsNames', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should return updated item with list appended, when trying to append list to non-existing item-attribute ', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe' } // 'orgsNames' don't exist
+      // first create an item
+      await simpleDDBUtil.createNewItemInTable('users', userItem)
+      // add new item-attribute having list
+      const orgNameItemsToAppend = ['Google', 'Amazon']
+      userItem.orgsNames = orgNameItemsToAppend
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await simpleDDBUtil.updateItemInTableByAppendingList('users', itemPkValue, 'orgsNames', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should add a new item to the table if it does not already exist, when trying to append list to non-existing item', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      // add new item-attribute having list
+      const orgNameItemsToAppend = ['Google', 'Amazon']
+      const updatedItem = await simpleDDBUtil.updateItemInTableByAppendingList('users', itemPkValue, 'orgsNames', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      // get added item
+      const fetchedItem = await simpleDDBUtil.getItemFromTable('users', itemPkValue)
+      console.log(`fetchedItem = ${JSON.stringify(fetchedItem)}`)
+      await expect(updatedItem).toEqual(fetchedItem)
+    }) // test
+    test('should return updated item with list appended, when trying to append number-type-list to the existing string-type-list of item-attribute', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await simpleDDBUtil.createNewItemInTable('users', userItem)
+      // update userItem json by appending more elements into 'orgsNames' list
+      const orgNameItemsToAppend = [1001, 2001]
+      const updatedList = userItem.orgsNames.concat(orgNameItemsToAppend)
+      userItem.orgsNames = updatedList
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await simpleDDBUtil.updateItemInTableByAppendingList('users', itemPkValue, 'orgsNames', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should throw an error, when trying to update item in non-existent table', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      await expect(simpleDDBUtil.updateItemInTableByAppendingList('users-invalid', itemPkValue, 'orgsNames', ['Apple', 'Google'])).rejects.toThrowError('Cannot do operations on a non-existent table')
+    }) // test
+    test('should add non-existing attribute in item and assign list to it, when trying to append list to the non-existing item-attribute', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await simpleDDBUtil.createNewItemInTable('users', userItem)
+      // update userItem json by appending more elements into 'orgsNames' list
+      const orgNameItemsToAppend = ['Google', 'Amazon']
+      userItem.orgsNamesNonExisting = orgNameItemsToAppend
+      console.log(`userItem = ${JSON.stringify(userItem)}`)
+      const updatedItem = await simpleDDBUtil.updateItemInTableByAppendingList('users', itemPkValue, 'orgsNamesNonExisting', orgNameItemsToAppend)
+      console.log(`updatedItem = ${JSON.stringify(updatedItem)}`)
+      await expect(updatedItem).toEqual(userItem)
+    }) // test
+    test('should throw an error, when trying to append null list', async () => {
+      expect.assertions(1)
+      const itemPkValue = uuid()
+      const userItem = { id: itemPkValue, fName: 'John', lName: 'Doe', orgsNames: ['Apple', 'Microsoft'] }
+      // first create an item
+      await simpleDDBUtil.createNewItemInTable('users', userItem)
+      await expect(simpleDDBUtil.updateItemInTableByAppendingList('users', itemPkValue, 'orgsNames', null)).rejects.toThrowError('invalid data')
+    }) // test
+    test('should throw an error, when null item pk value is passed', async () => {
+      expect.assertions(1)
+      await expect(simpleDDBUtil.updateItemInTableByAppendingList('users', null, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when non-string type item pk value is passed', async () => {
+      expect.assertions(1)
+      const itemPkValue = 1002
+      await expect(simpleDDBUtil.updateItemInTableByAppendingList('users', itemPkValue, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
+    }) // test
+    test('should throw an error, when non-string type item pk value is passed', async () => {
+      expect.assertions(1)
+      const itemPkValue = true
+      await expect(simpleDDBUtil.updateItemInTableByAppendingList('users', itemPkValue, 'orgsNames', ['Apple', 'Microsoft'])).rejects.toThrowError(Error)
+    }) // test
+  }) // describe('updateItemInTableByAppendingList')
 }) // describe('SimpleDynamoDBUtil')

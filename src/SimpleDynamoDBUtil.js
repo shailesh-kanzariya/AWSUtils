@@ -341,14 +341,24 @@ class SimpleDynamoDBUtil extends Object {
       }
       debug(`${funcName}itemList = ${JSON.stringify(itemList)}`)
       // remove item from itemList
+      const removedItemList = []
       for (const itemToRemove of listToRemove) {
         debug(`${funcName}itemToRemove = ${itemToRemove}`)
         if (itemList.includes(itemToRemove)) {
           const removedItem = itemList.splice(itemList.indexOf(itemToRemove), 1)
           debug(`${funcName}removedItem = ${JSON.stringify(removedItem)}`)
+          if (removedItem && Array.isArray(removedItem) && removedItem.length === 1) { // count removed items
+            removedItemList.push(itemToRemove)
+          }
         }
       } // for
+      debug(`${funcName}removedItemList = ${JSON.stringify(removedItemList)}`)
       debug(`${funcName}itemList after removing items = ${JSON.stringify(itemList)}`)
+      // no need to update item as no change in item list
+      if (removedItemList && removedItemList.length <= 0) {
+        return ddbItem // return original item as it is
+      }
+      // Else update item
       // prepare params
       const params = {
         TableName: tableName,
